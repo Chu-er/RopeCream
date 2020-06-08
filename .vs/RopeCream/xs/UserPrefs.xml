@@ -1,0 +1,30 @@
+﻿<Properties StartupConfiguration="{5AD9CF49-BBB5-893E-8136-B7B2BC42A7FA}|">
+  <MonoDevelop.Ide.Workbench>
+    <Files>
+      <File FileName="Assets/PainterV2/Painter.cs" Line="21" Column="1" />
+      <File FileName="Assets/LineRender/RopeSystem.cs" Line="205" Column="51" />
+      <File FileName="Assets/LineRender/Rope.shader" Line="1" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="RopeCream" expanded="True">
+            <Node name="Assets" expanded="True">
+              <Node name="LineRender" expanded="True">
+                <Node name="RopeSystem.cs" selected="True" />
+              </Node>
+              <Node name="PainterV2" expanded="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="61816bdd-e1cc-4407-b0c0-710497ffb99c" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>
