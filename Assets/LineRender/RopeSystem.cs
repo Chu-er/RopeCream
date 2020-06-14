@@ -14,7 +14,6 @@ public class RopeSystem : MonoBehaviour
     public static List<GameObject>  _tempLineList = new List<GameObject>();
     public static GameObject CurrentLineObj;
 
-    public static float MaxDistance = 1.4f;
     static bool isInitLine = false;
     static Transform _linePoolTrans;
     static GameObject _lineSystemObj;
@@ -22,34 +21,62 @@ public class RopeSystem : MonoBehaviour
 
     public Image Press_1;
     public Image Press_2;
+
+
+
     [Header("一整个关节组预设物")]
     public Transform PointGroup;
+    [Header("最低距离标记物")]
+    public Transform MachineMaxUp;
     [Header("拉伸速度")]
     public float StreachSpeed=1f;
     [Header("间隔时间")]
     public float IntervalTime = 0.15f;
     [Header("力大小")]
     public float ForceRate = 1f;
+    [Header("下落速度")]
+    public float MoveSpeed = 1f;
+    [Header("最大拉伸距离")]
+    public  float MaxDistance = 1.4f;
 
 
     Transform[] pointTrans;
     LineRenderer _lineRender;
+
+    [ Header("绘制组件")]
+    public Drawer drawer;
     /// <summary>
     /// PointGroup 要拉长的三根关节
     /// </summary>
-    [Header("")]
     public DistanceJoint2D _firstJoint2D;
     public DistanceJoint2D _secondJoint2D;
     public DistanceJoint2D _thirdJoint2D;
 
+    
 
+    [Header("最后一个点  控制晃动")]
+    public Transform endRig;
+
+    public Material rope_Mat;
+    public Material ropeCol_Mat;
     #region  数值 数据
     float _pressTime = 0f;
     float _tempStreach = 0f;
-
-    #endregion
     public bool enableDrawLine = false;
     public bool enbaleInput = true;
+    public bool simulate = true;
+
+
+    bool isClickFirst = false;
+    bool isClickSecond = false;
+    bool isCanMoveAndDraw = false;
+    #endregion
+
+
+
+
+
+
 
     void Awake(){
         _lineRender = GetComponent<LineRenderer>();
@@ -70,6 +97,9 @@ public class RopeSystem : MonoBehaviour
         Invoke("SetPosition", 0.5f);
         InitTempLine();
     }
+
+
+
 
     /// <summary>
     /// 修改lineRenderer的点
@@ -99,6 +129,8 @@ public class RopeSystem : MonoBehaviour
     {
         SetPosition();
         DetectInput();
+
+       
     }
 
     /// <summary>
@@ -109,51 +141,96 @@ public class RopeSystem : MonoBehaviour
         {
             return;
         }
-
         if (Input.GetKeyDown(KeyCode.Q))
         {
+            DetectedMoveAndDraw();
+            drawer.ChangeSource(0);
             Press_1.color =  Color.red;
         }
         else if (Input.GetKey(KeyCode.Q))
         {
-            // _rootRigidBody.MovePosition( new Vector2( _rootRigidBody.position.x- Time.deltaTime/2f, _rootRigidBody.position.y)  );
-            _pressTime += Time.deltaTime;
-            if (_pressTime >= IntervalTime)
-            {
-                generateJointObj();
-                _pressTime = 0f;
-            }
-            
+            isClickFirst = true;
         }
         else if (Input.GetKeyUp(KeyCode.Q))
         {
-           
-            onMouseUp();
+            isClickFirst = false;
+            Press_1.color = Color.white;
+            if (isClickSecond)
+            {
+                drawer.ChangeSource(1);
+            }
         }
 
-        if (Input.GetKeyDown(KeyCode.W))
-        {
+        /////////////<<<<<<<<<<<<<<<WWWWWWWWWWWWWWWWW>>>>>>>>>>>>>>///////////////
+        if (Input.GetKeyDown(KeyCode.W)) {
+
+            DetectedMoveAndDraw();
+            drawer.ChangeSource(1);
             Press_2.color =  Color.red;
             
         }
-        else if (Input.GetKeyDown(KeyCode.W))
+        else if (Input.GetKey(KeyCode.W))
         {
-            
+            isClickSecond = true;
         }
         else if(Input.GetKeyUp(KeyCode.W))
         {
+            isClickSecond = false;
             Press_2.color =  Color.white;
+            //松手后发现 第一个还按着
+            if (isClickFirst)
+            {
+                drawer.ChangeSource(0);
+            }
+
+        }
+        //只要有一个被点击了就下降
+        if (isClickSecond || isClickFirst)
+        {
+            _pressTime += Time.deltaTime;
+            if (_pressTime >= IntervalTime  && isCanMoveAndDraw)
+            {
+                
+                moveDown();
+                drawer.DrawPaint();
+                _pressTime = 0f;
+            }
+        }
+        else
+        {
+            onMouseUp();
         }
     }
 
-    /// <summary>
-    /// 生成一个 关节预设 单独     TODO  对象池
-    /// </summary>
-    void generateJointObj()
+    Coroutine detected;
+    void DetectedMoveAndDraw()
     {
-        if (_firstJoint2D.distance> MaxDistance)
+        isCanMoveAndDraw = true;
+        //if (detected !=null)
+        //{
+        //    StopCoroutine(detected);
+        //}
+        //detected = StartCoroutine(detectedMoveAndDraw());
+    }
+
+    IEnumerator detectedMoveAndDraw()
+    {
+        yield  return new WaitForSeconds(0.5f);
+        isCanMoveAndDraw = true;
+    }
+
+
+    /// <summary>
+    /// 生成一个 关节预设 单独    
+    /// </summary>
+    void generateJointObj() 
+    { 
+        moveDown();
+        return;
+        if (_firstJoint2D.distance> MaxDistance && simulate)
         {
             AddForce(2f);
+            
             return;
         }
         _tempStreach = Time.deltaTime * StreachSpeed;
@@ -166,17 +243,50 @@ public class RopeSystem : MonoBehaviour
         _thirdJoint2D.attachedRigidbody.position += new Vector2(0, _tempStreach * 0.98f);
         AddForce();
     }
+
+    Sequence left_right_Move;
+    void moveDown()
+    {
+
+        if (PointGroup.position.y<= MachineMaxUp.position.y)
+        {
+            return;
+        }
+        Vector3 toPos = Vector3.down * Time.deltaTime * MoveSpeed;
+        transform.Translate(toPos, Space.World);
+        if (left_right_Move!=null && !left_right_Move.IsPlaying())
+        {
+            left_right_Move.Play();
+            return;
+        }
+        if (left_right_Move!=null)
+        {
+            return;
+        }
+        float duringTime = 1f;
+        left_right_Move = DOTween.Sequence();
+        left_right_Move.SetAutoKill(false);
+
+        left_right_Move.Append(transform.DOLocalMoveX(-50, duringTime).SetEase(Ease.Linear));
+        left_right_Move.AppendInterval(0.1f);
+        for (int i = 0; i < 50; i++)
+        {
+            left_right_Move.Append(transform.DOLocalMoveX(50, duringTime*2).SetEase(Ease.Linear));
+            left_right_Move.Append(transform.DOLocalMoveX(-50, duringTime * 2).SetEase(Ease.Linear));
+            left_right_Move.AppendInterval(0.1f);
+        }
+    }
+
+
+
+
+
     /// <summary>
-    /// 施加左右摇摆的力
+    /// 施加左右摇摆的力  Obsolete
     /// </summary>
     void AddForce(float forceFactor = 1)
     {
         float tempForce = ForceRate;
-        if (_firstJoint2D.distance >= 0.77f)
-        {
-            tempForce = 10f;
-        }
-
         _firstJoint2D.attachedRigidbody.AddForce(new Vector2(Random.onUnitSphere.x * tempForce* forceFactor, 0f), ForceMode2D.Force);
         _secondJoint2D.attachedRigidbody.AddForce(new Vector2(Random.onUnitSphere.x * tempForce * forceFactor, 0f), ForceMode2D.Impulse);
         _thirdJoint2D.attachedRigidbody.AddForce(new Vector2(Random.onUnitSphere.x * tempForce * forceFactor, 0f), ForceMode2D.Impulse);
@@ -189,9 +299,11 @@ public class RopeSystem : MonoBehaviour
     {
         _tempStreach = 0f;
         _pressTime = 0f;
-        Press_1.color = Color.white;
-
-        if (_pointGroupDrop == null &&  _firstJoint2D.distance>0.2f)
+        if (left_right_Move!=null)
+        {
+            left_right_Move.Pause();
+        }
+        if (_pointGroupDrop == null &&  transform.position.y< 646f && simulate)
         {
             _pointGroupDrop = StartCoroutine(pointGroupDrop());
         }
@@ -215,8 +327,7 @@ public class RopeSystem : MonoBehaviour
         RopeSystem.BackPoolLine(gameObject);
         GameObject newLine = RopeSystem.GetLine<GameObject>();
 
-
-        newLine.transform.SetParent(null);
+        newLine.transform.SetParent(GameObject.Find("Canvas").transform);
         newLine.transform.position = Vector3.zero;
         newLine.SetActive(true);
         _pointGroupDrop = null;
@@ -299,5 +410,13 @@ public class RopeSystem : MonoBehaviour
         _tempLineList.Clear();
     }
 
+    private void OnDisable()
+    {
+        if (left_right_Move!=null)
+        {
+            left_right_Move.Kill();
+            left_right_Move = null;
+        }
+    }
 
 }

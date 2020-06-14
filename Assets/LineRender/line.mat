@@ -9,7 +9,7 @@ Material:
   m_PrefabAsset: {fileID: 0}
   m_Name: line
   m_Shader: {fileID: 4800000, guid: d6d4e59942a264063a8dabb252bcdf5a, type: 3}
-  m_ShaderKeywords: ENABLESECOND
+  m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -40,7 +40,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: df5bc264a3a874e3a9dc72c33c6a48f6, type: 3}
+        m_Texture: {fileID: 2800000, guid: 1dfaa7023660f497986a9b0a4c67d889, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -62,15 +62,16 @@ Material:
     m_Floats:
     - _Angle: 89.539
     - _BumpScale: 1
+    - _ColorIndex: 0
     - _Cutoff: 0.5
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
-    - _EnableSecond: 1
-    - _FadeFactor: 0.0938
+    - _EnableSecond: 0
+    - _FadeFactor: 0.026
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
-    - _Height: -0.186
+    - _Height: -0.5
     - _Metallic: 0
     - _Mode: 0
     - _OcclusionStrength: 1
@@ -78,6 +79,8 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
+    - _TimeSpeed: 0.4
+    - _TimeY: 0
     - _UVSec: 0
     - _ZWrite: 1
     m_Colors:

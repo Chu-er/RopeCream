@@ -1,17 +1,12 @@
-﻿Shader "Custom/Rope"
+﻿Shader "LineRenderSys/Rope"
 {
     Properties
     {
         _MainTex ("Texture", 2D) = "white" {}
-        _SecondTex("SecondTex",2D) = "white"{}
-        _Angle("Angle" , float) =  90
-        _Height("Height",range(-0.5,1.2)) = 1
-        _FadeFactor("FadeFactor",range(0,0.15)) = 0
-
-        _TintColor("TintColot" , Color)=  (1,1,1,1)
-        
-
-        [Toggle(ENABLESECOND)] _EnableSecond("EnableSecond", float) = 0
+        _Angle("Angle",float) =0
+        _TintColor("TintColor",Color)= (1,1,1,1)
+        _FlipRate("FlipRate",float) = 3
+        [Toggle(ENABLEFLIP)]_EnableFlipXAni("EnableFlipX", float) = 0
     }
     SubShader
     {
@@ -36,8 +31,8 @@
             #pragma target 2.0
             #pragma vertex vert
             #pragma fragment frag
-            #pragma multi_compile  __ ENABLESECOND
-
+            #pragma multi_compile  __ ENABLEFLIP
+            
             #include "UnityCG.cginc"
 
             struct appdata
@@ -55,23 +50,21 @@
 
             };
             //声明带有采样器的
-            UNITY_DECLARE_TEX2D(_MainTex);
+
+            sampler2D _MainTex;
             float4 _MainTex_TexelSize;
             //没有卵用
             // UNITY_DECLARE_TEX2D_NOSAMPLER(_SecondTex);
-            
-            sampler2D _SecondTex;
+
+            float _FlipRate;
             fixed4 _TintColor;
             float _Angle;
-            float _Height;
-            float _FadeFactor;
-
             v2f vert (appdata v)
             {
                 v2f o;
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = v.uv;
-                o.color = v.color;
+                o.color = v.color*_TintColor;
                 return o;
             }
 
@@ -87,26 +80,23 @@
                 } ;
                 i.uv = mul(rotate,i.uv );
 
-                fixed4 col = (1,1,1,1);
-                
-                 col = UNITY_SAMPLE_TEX2D(_MainTex, i.uv);
+                fixed4 col_1 = (0,0,0,0);
 
-                #ifdef ENABLESECOND
-                //使用重用 会无法采样正确的颜色
-                    // fixed4 col_2 = UNITY_SAMPLE_TEX2D_SAMPLER(_SecondTex,_MainTex,i.uv);
-                    float2 uv_2 =  i.uv;
-                    fixed4 col_2 = tex2D(_SecondTex,uv_2);
-
-                    float topDist = _MainTex_TexelSize.w -_Height;
-
-                    // float isNearTop =  step(_Height, uv_2.y);
-                    float isNearTop =smoothstep(_Height-_FadeFactor, _Height+_FadeFactor,uv_2.y);
+                #ifdef ENABLEFLIP
+                    //如果 time =0  就进行一次动画
                     
+                    float time =  fmod( floor(_Time.y*_FlipRate), 2);
 
-
-                    col = lerp(col_2 ,  col, isNearTop) ;
+                    if(time==0)
+                    {
+                         i.uv.x = 1 - i.uv.x ;
+                    }
+                    
                 #endif
-                return col*i.color;
+
+                col_1 = tex2D(_MainTex, i.uv);
+                
+                return col_1*i.color;
             }
             ENDCG
         }

@@ -91,7 +91,6 @@ public class Painter : MonoBehaviour {
 
 	[SerializeField]
 	private RenderTexture m_rt,m_rt2;
-	[HideInInspector]
 	[SerializeField]
 	private bool m_inited = false;
 	public bool isInited{
@@ -169,16 +168,15 @@ public class Painter : MonoBehaviour {
 	}
 
 	void Start () {
-		if (isAutoInit) {
-			Init();
-		}
+     
 	}
 
 	public void Init()
 	{
-		if(!m_inited){
-
-			if(penMat == null || canvasMat==null){
+		Debug.Log(" "+ m_inited);
+		m_renderTexWidth = (int)GetComponent<RectTransform>().rect.width;
+		m_renderTexHeight = (int)GetComponent<RectTransform>().rect.height;
+		if (penMat == null || canvasMat==null){
 				Debug.LogError("Pen And CanvasMat is Null.");
 				return;
 			}
@@ -252,7 +250,6 @@ public class Painter : MonoBehaviour {
 			}else{
 				ResetCanvas();
 			}
-		}
 	}
 
 	/// <summary>
@@ -282,6 +279,7 @@ public class Painter : MonoBehaviour {
 		if(m_rt && texture){
 			Graphics.SetRenderTarget (m_rt);
 			Graphics.Blit(texture,m_rt);
+
 			RenderTexture.active = null;
 		}
 	}
@@ -322,8 +320,10 @@ public class Painter : MonoBehaviour {
             else 
                 uvPos= SpriteHitPoint2UV(camera.ScreenToWorldPoint(screenPosOrUV),posIsUV);
 		}
+        //左上角是原点
 		screenPosOrUV = new Vector3(uvPos.x * m_renderTexWidth, m_renderTexHeight - uvPos.y * m_renderTexHeight,0f);
-		if(!m_isDrawing){
+
+		if (!m_isDrawing){
 			m_isDrawing = true;
 			m_prevMousePosition = screenPosOrUV;
 		}
@@ -408,18 +408,17 @@ public class Painter : MonoBehaviour {
 				GL.Begin(GL.TRIANGLE_STRIP);
 				GL.TexCoord2(0.5f, 0.5f);
 				GL.Color(penColor);
-				for (float i=-step;i<6.28318f;i+=step)
-				{
-					GL.Vertex3(prev.x,prev.y,0f);
-					GL.Vertex3(prev.x+Mathf.Sin(i)*radius,prev.y+Mathf.Cos(i)*radius,0f);
-					GL.Vertex3(prev.x+Mathf.Sin(i+step)*radius,prev.y+Mathf.Cos(i+step)*radius,0f);
+				//for (float i=-step;i<6.28318f;i+=step)
+				//{
+				//	GL.Vertex3(prev.x,prev.y,0f);
+				//	GL.Vertex3(prev.x+Mathf.Sin(i)*radius,prev.y+Mathf.Cos(i)*radius,0f);
+				//	GL.Vertex3(prev.x+Mathf.Sin(i+step)*radius,prev.y+Mathf.Cos(i+step)*radius,0f);
 
-					GL.Vertex3(current.x,current.y,0f);
-					GL.Vertex3(current.x+Mathf.Sin(i)*radius,current.y+Mathf.Cos(i)*radius,0f);
-					GL.Vertex3(current.x+Mathf.Sin(i+step)*radius,current.y+Mathf.Cos(i+step)*radius,0f);
-				}
+				//	GL.Vertex3(current.x,current.y,0f);
+				//	GL.Vertex3(current.x+Mathf.Sin(i)*radius,current.y+Mathf.Cos(i)*radius,0f);
+				//	GL.Vertex3(current.x+Mathf.Sin(i+step)*radius,current.y+Mathf.Cos(i+step)*radius,0f);
+				//}
 				GL.End();
-
 				//draw rect
 				GL.Begin(GL.QUADS);
 				GL.TexCoord2(0.5f, 0.5f);
@@ -491,6 +490,7 @@ public class Painter : MonoBehaviour {
 			GL.PopMatrix();
 		}
 	}
+
 
 	public void DrawRT2OtherRT(RenderTexture rt, RenderTexture otherRt,Material drawMat = null){
 		if(drawMat==null) drawMat = penMat;
