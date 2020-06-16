@@ -133,22 +133,19 @@ public class Drawer : MonoBehaviour
         Vector2 localPos;
         bool isArea =  RectTransformUtility.ScreenPointToLocalPointInRectangle(_rect, painterScreen[currentPaintID], Camera.main, out localPos);
 
-
         int scrY = detectedTex.height / 2 + (int)localPos.y;
 
         Texture2D temp = new Texture2D(detectedTex.width, detectedTex.height, TextureFormat.ARGB32, false);
         RenderTexture actived = RenderTexture.active;
         RenderTexture.active = detectedTex;
-        temp.ReadPixels(new Rect(0, 0, detectedTex.width, detectedTex.height), 0, 0);
+        temp.ReadPixels(new Rect(0, 0, detectedTex.width, detectedTex.height), 20, 50);
         temp.Apply();
         RenderTexture.active = actived;
         reciveRaw.texture = temp;
-       Color rece =  temp.GetPixel(detectedTex.width / 2, scrY);
+        Color rece =  temp.GetPixel(detectedTex.width / 4*3, scrY);
         Debug.Log(scrY+"Color"+rece);
 
         time = 0;
-
-
     }
 
 
