@@ -612,6 +612,17 @@ public class Painter : MonoBehaviour {
 		return c1 && c2 && c3 && c4;
 	}
 
+    /// <summary>
+    /// 释放redner 2
+    /// </summary>
+    public void DisposeRenderTexture_2()
+    {
+        if (renderTexture2!=null)
+        {
+			RenderTexture.ReleaseTemporary(renderTexture2);
+        }
+    }
+
 
 	#if UNITY_EDITOR
 	void OnDrawGizmos(){

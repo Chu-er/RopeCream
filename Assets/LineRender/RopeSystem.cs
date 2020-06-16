@@ -23,7 +23,6 @@ public class RopeSystem : MonoBehaviour
     public Image Press_2;
 
 
-
     [Header("一整个关节组预设物")]
     public Transform PointGroup;
     [Header("最低距离标记物")]
@@ -52,10 +51,20 @@ public class RopeSystem : MonoBehaviour
     public DistanceJoint2D _secondJoint2D;
     public DistanceJoint2D _thirdJoint2D;
 
-    
-
     [Header("最后一个点  控制晃动")]
     public Transform endRig;
+
+    [Header("底部检测点 开启DrawCream")]
+    public Transform downDected;
+
+    [Header("下落检测点 开启DrawCream")]
+    public Transform downCenterDected;
+
+    [Header("所有的奶油Painter")]
+    public Painter[] creamPainter;
+
+    [Header("线")]
+    public RawImage lineRawImage;
 
     public Material rope_Mat;
     public Material ropeCol_Mat;
@@ -70,11 +79,10 @@ public class RopeSystem : MonoBehaviour
     bool isClickFirst = false;
     bool isClickSecond = false;
     bool isCanMoveAndDraw = false;
+
+    bool turnRight = true;
+    bool turnLeft = false;
     #endregion
-
-
-
-
 
 
 
@@ -129,7 +137,6 @@ public class RopeSystem : MonoBehaviour
     {
         SetPosition();
         DetectInput();
-
        
     }
 
@@ -202,22 +209,12 @@ public class RopeSystem : MonoBehaviour
         }
     }
 
-    Coroutine detected;
     void DetectedMoveAndDraw()
     {
         isCanMoveAndDraw = true;
-        //if (detected !=null)
-        //{
-        //    StopCoroutine(detected);
-        //}
-        //detected = StartCoroutine(detectedMoveAndDraw());
     }
 
-    IEnumerator detectedMoveAndDraw()
-    {
-        yield  return new WaitForSeconds(0.5f);
-        isCanMoveAndDraw = true;
-    }
+    
 
 
     /// <summary>
@@ -252,29 +249,36 @@ public class RopeSystem : MonoBehaviour
         {
             return;
         }
-        Vector3 toPos = Vector3.down * Time.deltaTime * MoveSpeed;
-        transform.Translate(toPos, Space.World);
-        if (left_right_Move!=null && !left_right_Move.IsPlaying())
-        {
-            left_right_Move.Play();
-            return;
-        }
-        if (left_right_Move!=null)
-        {
-            return;
-        }
-        float duringTime = 1f;
-        left_right_Move = DOTween.Sequence();
-        left_right_Move.SetAutoKill(false);
 
-        left_right_Move.Append(transform.DOLocalMoveX(-50, duringTime).SetEase(Ease.Linear));
-        left_right_Move.AppendInterval(0.1f);
-        for (int i = 0; i < 50; i++)
+        if (downCenterDected.position.y<=downDected.position.y)
         {
-            left_right_Move.Append(transform.DOLocalMoveX(50, duringTime*2).SetEase(Ease.Linear));
-            left_right_Move.Append(transform.DOLocalMoveX(-50, duringTime * 2).SetEase(Ease.Linear));
-            left_right_Move.AppendInterval(0.1f);
+            drawer.GetTxtureByPixel();
         }
+
+        float toY = Time.deltaTime * MoveSpeed;
+        if (turnRight)
+        {
+            if (transform.localPosition.x>=30f)
+            {
+                turnRight = false;
+                turnLeft = true;
+                return;
+            }
+            transform.localPosition += new Vector3(toY, -toY*0.8f);
+        }
+        if (turnLeft)
+        {
+            if (transform.localPosition.x <= -79)
+            {
+                turnRight = true;
+                turnLeft = false;
+                return;
+            }
+            transform.localPosition += new Vector3(-toY,-toY * 0.8f);
+        }
+
+
+  
     }
 
 
